@@ -1,0 +1,14 @@
+# Configure CONFERE_DOMAIN com um domínio real apontando para o servidor.
+# TLS público será provisionado pelo Caddy somente com DNS/portas 80 e 443 funcionais.
+{$CONFERE_DOMAIN} {
+    request_body {
+        max_size 6MB
+    }
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        Referrer-Policy "no-referrer"
+        X-Content-Type-Options "nosniff"
+    }
+    reverse_proxy app:8080
+    # Sem access log de corpos/headers. Nunca registre Authorization ou tokens de recuperação.
+}

@@ -1,0 +1,16 @@
+**
+!Dockerfile
+!pom.xml
+!mvnw
+!.mvn/
+!.mvn/wrapper/
+!.mvn/wrapper/maven-wrapper.properties
+!src/
+!src/main/
+!src/main/**
+# Mesmo dentro da árvore permitida, estes arquivos nunca entram no contexto.
+**/.env
+**/.env.*
+**/*.key
+**/*.p12
+**/*.pem

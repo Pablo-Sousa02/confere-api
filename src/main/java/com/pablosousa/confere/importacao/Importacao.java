@@ -13,6 +13,10 @@ import jakarta.persistence.Table;
 @Table(name = "importacoes")
 public class Importacao {
 
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
+    @jakarta.persistence.JoinColumn(name = "empresa_id", nullable = false)
+    private com.pablosousa.confere.empresa.Empresa empresa;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,6 +40,13 @@ public class Importacao {
         this.tipo = tipo;
         this.status = StatusImportacao.PROCESSANDO;
     }
+
+    public Importacao(String nomeArquivo, TipoImportacao tipo, com.pablosousa.confere.empresa.Empresa empresa) {
+        this(nomeArquivo, tipo);
+        this.empresa = empresa;
+    }
+
+    public com.pablosousa.confere.empresa.Empresa getEmpresa() { return empresa; }
 
     public Long getId() {
         return id;

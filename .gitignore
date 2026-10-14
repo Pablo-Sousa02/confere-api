@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Segredos locais
+.env
+.env.*
+!.env.example
+.local/
+*.dump
+*.p12
+*.key

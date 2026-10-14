@@ -1,0 +1,54 @@
+name: confere-local
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: confere_local
+      POSTGRES_USER: confere_local
+      POSTGRES_PASSWORD: ${LOCAL_DB_PASSWORD:?Execute scripts/dev.ps1 init}
+    ports: ["127.0.0.1:${LOCAL_DB_PORT:-55432}:5432"]
+    volumes: ["postgres_data:/var/lib/postgresql"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U confere_local -d confere_local"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  mailpit:
+    image: axllent/mailpit:latest@sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea
+    ports: ["127.0.0.1:${LOCAL_MAIL_PORT:-8025}:8025"]
+    environment:
+      MP_MAX_MESSAGES: 200
+    restart: unless-stopped
+  app:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/confere_local
+      DB_USERNAME: confere_local
+      DB_PASSWORD: ${LOCAL_DB_PASSWORD:?Execute scripts/dev.ps1 init}
+      JWT_SECRET: ${LOCAL_JWT_SECRET:?Execute scripts/dev.ps1 init}
+      CORS_ALLOWED_ORIGINS: ${LOCAL_CORS_ORIGINS:-http://localhost:5173}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      RESET_PASSWORD_URL: ${LOCAL_RESET_URL:-http://localhost:5173/redefinir-senha}
+      EMAIL_FROM: no-reply@confere.local
+    ports: ["127.0.0.1:${LOCAL_API_PORT:-18080}:8080"]
+    depends_on:
+      db: {condition: service_healthy}
+      mailpit: {condition: service_started}
+    restart: unless-stopped
+  restore-db:
+    profiles: ["tools"]
+    image: postgres:18
+    environment:
+      POSTGRES_DB: confere_restore
+      POSTGRES_USER: confere_local
+      POSTGRES_PASSWORD: ${LOCAL_DB_PASSWORD:?Execute scripts/dev.ps1 init}
+    tmpfs: ["/var/lib/postgresql"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U confere_local -d confere_restore"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  postgres_data:
