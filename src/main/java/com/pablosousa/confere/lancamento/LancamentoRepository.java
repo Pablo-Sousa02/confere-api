@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
     List<Lancamento> findAllByImportacao_Id(Long importacaoId);
+    long countByImportacao_Id(Long importacaoId);
 }

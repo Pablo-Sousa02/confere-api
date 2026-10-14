@@ -158,6 +158,43 @@ public class ImportacaoService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public List<ImportacaoResumo> listarImportacoes() {
+        return importacaoRepository.findAll(
+                        org.springframework.data.domain.Sort
+                                .by(org.springframework.data.domain.Sort.Direction.DESC, "id")
+                )
+                .stream()
+                .map(importacao -> new ImportacaoResumo(
+                        importacao.getId(),
+                        importacao.getNomeArquivo(),
+                        importacao.getTipo(),
+                        importacao.getStatus(),
+                        lancamentoRepository.countByImportacao_Id(importacao.getId()),
+                        erroImportacaoRepository.countByImportacao_Id(importacao.getId())
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ErroImportacaoResumo> listarErros(Long importacaoId) {
+        if (!importacaoRepository.existsById(importacaoId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND,
+                    "Importação não encontrada."
+            );
+        }
+
+        return erroImportacaoRepository
+                .findAllByImportacao_IdOrderByNumeroLinhaAsc(importacaoId)
+                .stream()
+                .map(erro -> new ErroImportacaoResumo(
+                        erro.getNumeroLinha(),
+                        erro.getMensagem()
+                ))
+                .toList();
+    }
+
     private BigDecimal converterValor(String valorTexto) {
         try {
             String valorNormalizado = valorTexto.trim();
@@ -174,5 +211,6 @@ public class ImportacaoService {
                     "Valor inválido. Exemplo de formato aceito: 120,00."
             );
         }
+
     }
 }
